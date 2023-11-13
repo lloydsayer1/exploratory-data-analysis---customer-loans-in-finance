@@ -28,13 +28,20 @@ class RDSDatabaseConnector:
         loan_payments = self.createDataframe()
         loan_payments.to_csv('loanpayments.csv')    
 
-p1 = RDSDatabaseConnector('credentials.yml')
-p1.saveData()
+    def csvToDataframe(self):
+        df = pd.read_csv('loanpayments.csv')
+        return df
+
+
+#p1 = RDSDatabaseConnector('credentials.yml')
+#p1.saveData()
        
+loadCSV = RDSDatabaseConnector('credentials.yml')
+df = loadCSV.csvToDataframe()
 
 
-
-
+df.head()
+df.describe()
 
 
 
