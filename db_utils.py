@@ -9,12 +9,12 @@ class RDSDatabaseConnector:
 
     def credentialsLoader(self):
         with open(self.yamlCredentials, 'r') as file:
-            yamlCredentials = yaml.safe_load(file)
-        return yamlCredentials
+            yamlPass = yaml.safe_load(file)
+        return yamlPass
 
     def connector(self):
-        self.credentialsLoader()
-        engine = create_engine(f"postgresql+psycopg2://{self.yamlCredentials['RDS_USER']}:{self.yamlCredentials['RDS_PASSWORD']}@{self.yamlCredentials['RDS_HOST']}:{self.yamlCredentials['RDS_PORT']}/{self.yamlCredentials['RDS_DATABASE']}")
+        yamlPass = self.credentialsLoader()
+        engine = create_engine(f"postgresql+psycopg2://{yamlPass['RDS_USER']}:{yamlPass['RDS_PASSWORD']}@{yamlPass['RDS_HOST']}:{yamlPass['RDS_PORT']}/{yamlPass['RDS_DATABASE']}")
         engine.execution_options(isolation_level='AUTOCOMMIT').connect()
         engine.connect()
         return engine
@@ -30,7 +30,7 @@ class RDSDatabaseConnector:
 
 p1 = RDSDatabaseConnector('credentials.yml')
 p1.saveData()
-        
+       
 
 
 
