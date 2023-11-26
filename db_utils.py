@@ -46,7 +46,7 @@ class RDSDatabaseConnector:
         pd.set_option('display.max_columns', None)
         return df
 
-class DataTransform:
+class DataTransform: #transforms all the data into correct format
 
     def __init__(self, df):
         self.df = df
@@ -122,33 +122,33 @@ class DataTransform:
         dfUse['earliest_credit_line'] = pd.to_datetime(dfUse['earliest_credit_line'])
         return dfUse
     
-class DataFrameInfo:
+class DataFrameInfo: # all methods for various pieces of info on the dataframe
 
     def __init__(self, df):
         self.df = df
 
-    def description(self):
+    def description(self): # description of the dataframe
         dfUse = self.df
         dfDescription = dfUse.describe()
         return dfDescription
 
-    def dataTypes(self):
+    def dataTypes(self): # datatypes of the dataframe
         dfUse = self.df
         dfDtypes = dfUse.dtypes
         return dfDtypes
 
-    def uniqueValues(self):
+    def uniqueValues(self): # unique values of the different columns in the dataframe
         dfUse = self.df
         dfCat = dfUse[['term', 'grade', 'sub_grade', 'home_ownership', 'verification_status', 'loan_status', 'payment_plan', 'purpose', 'application_type']].copy()
         for col in dfCat:
             print(dfCat[(col)].value_counts())
     
-    def dfShapeOut(self):
+    def dfShapeOut(self): # shape of the dataframe
         dfUse = self.df
         dfShape = dfUse.shape
         return dfShape
     
-    def nullPercentage(self):
+    def nullPercentage(self): # NaN values in the dataframe
         dfUse = self.df
         nullCalc = (dfUse.isnull().sum()/len(dfUse))*100
         return nullCalc
@@ -159,43 +159,38 @@ class Plotter:
         self.df = df
         self.inputColumn = inputColumn
     
-    def qqPlotter(self):
+    def qqPlotter(self):  # makes a qqplot of the inputted columns in the dataframe
         dfUse = self.df
         col = self.inputColumn
         qq_plot = qqplot(dfUse[col] , scale=1 ,line='q', fit=True)
         return pyplot.show()
     
-    def boxPlotter(self):
+    def boxPlotter(self): # creates a boxplot for all the relevant columns in the dataframe
         dfUse = self.df
         dfUse = dfUse.drop(['term', 'grade', 'sub_grade', 'home_ownership', 'verification_status', 'loan_status', 'purpose', 'application_type', 'issue_date', 'earliest_credit_line', 'last_payment_date', 'last_credit_pull_date', 'payment_plan', 'next_payment_date'], axis = 1)
         for column in dfUse:
             pyplot.figure()
             dfUse.boxplot([column])
 
-    def heatmapPlotter(self):
+    def heatmapPlotter(self): # makes the correlation heatmap for all of the relevant dataframe columns
         dfUse = self.df
         dfHeatmap = dfUse[['loan_amount', 'funded_amount', 'funded_amount_inv', 'int_rate', 'instalment', 'employment_length', 'annual_inc', 'dti', 'delinq_2yrs', 'inq_last_6mths', 'mths_since_last_delinq', 'mths_since_last_record', 'open_accounts', 'total_accounts', 'out_prncp', 'out_prncp_inv', 'total_payment', 'total_payment_inv', 'total_rec_prncp', 'total_rec_int', 'total_rec_late_fee', 'recoveries', 'collection_recovery_fee', 'last_payment_amount', 'collections_12_mths_ex_med', 'mths_since_last_major_derog', 'policy_code']]
         x = sns.heatmap(dfHeatmap.corr())
         return x
         
 
-    
-
-
-
-
 class DataFrameTransform:
 
     def __init__(self, df):
         self.df = df
 
-    def dropData(self):
+    def dropData(self):  # drops data not needed in the dataframe
         dfUse = self.df
         dfUse = dfUse.drop(['mths_since_last_delinq', 'mths_since_last_record', 'next_payment_date', 'mths_since_last_major_derog'], axis = 1)
         dfUse = dfUse.dropna(subset = ['last_payment_date', 'last_credit_pull_date', 'collections_12_mths_ex_med'])
         return dfUse
 
-    def nullHandler(self):
+    def nullHandler(self):  # removes nulls from relevant columns in the dataframe
         dfUse = self.dropData()
         dfUse['funded_amount'] = dfUse['funded_amount'].fillna(dfUse['loan_amount'])
         dfUse['term'] = dfUse['term'].fillna(dfUse['term'].mode())
@@ -203,21 +198,14 @@ class DataFrameTransform:
         dfUse['employment_length'] = dfUse['employment_length'].fillna(df['employment_length'].median())
         return dfUse
     
-    def skewOutput(self):
+    def skewOutput(self):  # shows the skew of relevant columns in the dataframe
         dfUse = self.df
         dfNew = dfUse.drop(['term', 'grade', 'sub_grade', 'home_ownership', 'verification_status', 'loan_status', 'purpose', 'application_type', 'issue_date', 'earliest_credit_line', 'last_payment_date', 'last_credit_pull_date', 'payment_plan', 'next_payment_date'], axis = 1)
         dfNew = dfNew.skew()
         return dfNew
     
-    def skewFixer(self):
+    def skewFixer(self): # fixes the skew for columns decided upon
         dfUse = self.df
-        loan_amount_boxcox = dfUse["loan_amount"]
-        loan_amount_boxcox = stats.boxcox(loan_amount_boxcox)
-        loan_amount_boxcox = pd.Series(loan_amount_boxcox[0])
-        t=sns.histplot(loan_amount_boxcox,label="Skewness: %.2f"%(loan_amount_boxcox.skew()) )
-        qq_plot = qqplot(loan_amount_boxcox , scale=1 ,line='q', fit=True)
-        t.legend()
-        dfUse['loan_amount'] = loan_amount_boxcox
 
         annual_inc_boxcox = dfUse["annual_inc"]
         annual_inc_boxcox = stats.boxcox(annual_inc_boxcox)
@@ -237,7 +225,7 @@ class DataFrameTransform:
 
         return dfUse
     
-    def outlierRemover(self):
+    def outlierRemover(self): # removes outliers from columns decided upon
         dfUse = self.df
         dfOutliers = ['loan_amount', 'funded_amount', 'funded_amount_inv', 'int_rate', 'instalment', 'employment_length', 'annual_inc', 'dti', 'delinq_2yrs', 'inq_last_6mths', 'mths_since_last_delinq', 'mths_since_last_record', 'open_accounts', 'total_accounts', 'out_prncp', 'out_prncp_inv', 'total_payment', 'total_payment_inv', 'total_rec_prncp', 'total_rec_int', 'total_rec_late_fee', 'recoveries', 'collection_recovery_fee', 'last_payment_amount', 'collections_12_mths_ex_med', 'mths_since_last_major_derog', 'policy_code']
         for col in dfOutliers:
@@ -250,17 +238,10 @@ class DataFrameTransform:
         dfUse.shape
         return dfUse
     
-    def correlationRemover(self):
+    def correlationRemover(self): # I felt that I ended up needing to use the columns that I initially dropped for being too correlated
         dfUse = self.df
-        dfUse = dfUse.drop(['funded_amount_inv', 'total_payment_inv', 'total_rec_prncp'], axis = 1)
+        dfUse = dfUse.drop([], axis = 1)
         return dfUse
-
-            
-
-
-
-
-
        
 loadCSV = RDSDatabaseConnector('credentials.yml')
 df = loadCSV.csvToDataframe()
@@ -270,33 +251,104 @@ df = transformData.earliestCredit()
 
 dataframetransformation = DataFrameTransform(df)
 df = dataframetransformation.nullHandler()
-dfnew = dataframetransformation.skewOutput()
-print(dfnew)
 df = dataframetransformation.skewFixer()
-
-qqplotshow = Plotter(df, 'annual_inc')
-qqplotshow.qqPlotter()
-
 df = dataframetransformation.outlierRemover()
 df = dataframetransformation.correlationRemover()
 df.shape
 
 
-qqplotshow.heatmapPlotter()
 
 
 
+def milestone4task1(df):
+    dfBar = df[['total_rec_prncp', 'funded_amount', 'funded_amount_inv', 'last_payment_amount', 'term', 'issue_date', 'last_payment_date']]
+    dfBar = dfBar.dropna(subset = 'term', axis = 0)
+    dfBar['term'] = dfBar['term'].astype('int64')
+    dfBar['months_paid'] = (dfBar['last_payment_date'].dt.year - dfBar['issue_date'].dt.year) *12 + (dfBar['last_payment_date'].dt.month - dfBar['issue_date'].dt.month)
+    dfBar['remaining_months'] = dfBar['term'] - dfBar['months_paid']
+    percentRepaid = round((dfBar['total_rec_prncp'].sum())/(dfBar['funded_amount'].sum())*100, 2)
+    print(f"{percentRepaid}% of the funded amount has been repaid")
+    percentRepaidInv = round((dfBar['total_rec_prncp'].sum())/(dfBar['funded_amount_inv'].sum())*100, 2)
+    print(f"{percentRepaidInv}% of the amount funded by investors has been repaid")
+    dfBar['remaining_months'].mask(dfBar['remaining_months'] < 0, 0, inplace = True)
+    dfBar['remaining_months'].mask(dfBar['remaining_months'] > 6, 6, inplace = True)
+    dfBar['projection'] = dfBar['last_payment_amount'] * dfBar['remaining_months']
+    projected_amount = dfBar['projection'].sum()
+    current_amount = dfBar['total_rec_prncp'].sum()
+    funded_amount = dfBar['funded_amount'].sum()
+    funded_inv_amount = dfBar['funded_amount_inv'].sum()
+    pyplot.clf()
+    x = np.array(["Current amount paid back", "Amount funded", "Amount funded by investors", "Paid back in next 6 months"])
+    y = np.array([current_amount, funded_amount, funded_inv_amount, projected_amount])
+    sns.barplot(x = x, y = y)
+    return
 
 
+def milestone4task2(df):
+    dfCharged = df[['total_rec_prncp', 'loan_status', 'funded_amount']]
+    chargedOffSum = dfCharged.loc[dfCharged['loan_status'] == "Charged Off", 'total_rec_prncp'].sum()
+    print(f"The amount of money paid towards these loans was £{chargedOffSum}")
+    percentageSum = round((5571/54231)*100, 2)
+    print(f"The percentage of charged off loans is {percentageSum}%")
+    return 
+
+def milestone4task3(df):
+    dfCharged = df[['total_rec_prncp', 'loan_status', 'funded_amount', 'last_payment_amount', 'term', 'issue_date', 'last_payment_date', 'int_rate']]
+    dfCharged = dfCharged.dropna()
+    dfCharged['term'] = dfCharged['term'].astype(np.float64)
+    dfCharged['months_paid'] = (dfCharged['last_payment_date'].dt.year - dfCharged['issue_date'].dt.year) *12 + (dfCharged['last_payment_date'].dt.month - dfCharged['issue_date'].dt.month)
+    dfCharged['remaining_months'] = dfCharged['term'] - dfCharged['months_paid']
+    chargedOffProjectionDf = dfCharged[dfCharged.loan_status == 'Charged Off']
+    chargedOffProjectionDf['lostRevenue'] = chargedOffProjectionDf['last_payment_amount']*pow(1+(chargedOffProjectionDf['int_rate']/100), (chargedOffProjectionDf['remaining_months']/12))
+    amount_lost_interest = round(chargedOffProjectionDf['lostRevenue'].sum(), 2)
+    print(f"The amount of revenue lost through interest on charged off loans is £{amount_lost_interest}")
+    chargedOffProjectionDf['charged_off_unpaid_loss'] = chargedOffProjectionDf['last_payment_amount']*chargedOffProjectionDf['remaining_months']
+    amount_lost_total = round(chargedOffProjectionDf['charged_off_unpaid_loss'].sum() + amount_lost_interest, 2)
+    print(f"Amount of revenue lost in total from charged off loans including interest revenue is £{amount_lost_total}")
+    return amount_lost_total
+
+def milestone4task4(df, amount_lost_total):
+    lateTotal = round(((106+580)/54231)*100, 2)
+    print(f"The percentage of people late on payments is {lateTotal}%")
+    dfCharged = df[['total_rec_prncp', 'loan_status', 'funded_amount', 'last_payment_amount', 'term', 'issue_date', 'last_payment_date', 'int_rate']]
+    dfCharged = dfCharged.dropna()
+    dfCharged['term'] = dfCharged['term'].astype(np.float64)
+    dfCharged['months_paid'] = (dfCharged['last_payment_date'].dt.year - dfCharged['issue_date'].dt.year) *12 + (dfCharged['last_payment_date'].dt.month - dfCharged['issue_date'].dt.month)
+    dfCharged['remaining_months'] = dfCharged['term'] - dfCharged['months_paid']
+    late_a = dfCharged["loan_status"] == "Late (16-30 days)"
+    late_b = dfCharged["loan_status"] == "Late (31-120 days)"
+    any_late = (late_a | late_b)
+    late_df = dfCharged.loc[any_late, :]
+    late_df['amount_lost'] = late_df['last_payment_amount']*late_df['remaining_months']
+    amount_lost = round(late_df['amount_lost'].sum(), 2)
+    print(f"If all of these customers were to be changed to 'Charged Off' then the loss of potential revenue would be £{amount_lost}")
+    amount_lost_total = round(amount_lost_total + amount_lost, 2)
+    print(f"Including the already Charged Off customers, the total loss from this group of customers would be £{amount_lost_total}")
+    return late_df
+
+def milestone5task5(late_df, df):
+    late_a = df["loan_status"] == "Late (16-30 days)"
+    late_b = df["loan_status"] == "Late (31-120 days)"
+    late_c = df["loan_status"] == "Charged Off"
+    any_late = (late_a | late_b | late_c)
+    late_df = df.loc[any_late, :]
+    late_df = late_df[['loan_status', 'grade', 'payment_plan', 'dti', 'purpose', 'int_rate']]
+    fig, ax = pyplot.subplots()
+    ax.bar(late_df['loan_status'], late_df['grade'].value_counts())
+    ax.set_ylabel('Grade')
+    ax.set_title('Loan Status')
+
+    pyplot.show()
+    
+    return
+
+milestone4task1(df)
+
+milestone4task2(df)
+
+amount_lost_total = milestone4task3(df)
+
+late_df = milestone4task4(df, amount_lost_total)
 
 
-
-
-
-
-
-
-
-
-#dfNew = df.drop(['term', 'grade', 'sub_grade', 'home_ownership', 'verification_status', 'loan_status', 'purpose', 'application_type', 'issue_date', 'earliest_credit_line', 'last_payment_date', 'last_credit_pull_date', 'payment_plan'], axis = 1)
-
+milestone5task5(late_df, df)
